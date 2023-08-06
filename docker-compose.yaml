@@ -1,22 +1,3 @@
-# AIRFLOW_IMAGE_NAME           - Docker image name used to run Airflow.
-#                                Default: apache/airflow:2.6.2
-# AIRFLOW_UID                  - User ID in Airflow containers
-#                                Default: 50000
-# AIRFLOW_PROJ_DIR             - Base path to which all the files will be volumed.
-#                                Default: .
-# Those configurations are useful mostly in case of standalone testing/running Airflow in test/try-out mode
-#
-# _AIRFLOW_WWW_USER_USERNAME   - Username for the administrator account (if requested).
-#                                Default: airflow
-# _AIRFLOW_WWW_USER_PASSWORD   - Password for the administrator account (if requested).
-#                                Default: airflow
-# _PIP_ADDITIONAL_REQUIREMENTS - Additional PIP requirements to add when starting all containers.
-#                                Use this option ONLY for quick checks. Installing requirements at container
-#                                startup is done EVERY TIME the service is started.
-#                                A better way is to build a custom image or extend the official image
-#                                as described in https://airflow.apache.org/docs/docker-stack/build.html.
-#                                Default: ''
-
 ---
 version: '3.9'
 x-airflow-common:
@@ -77,11 +58,8 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: 'db'
-      # So you don't have to use root, but you can if you like
       MYSQL_USER: 'admin'
-      # You can use whatever password you like
       MYSQL_PASSWORD: 'admin'
-      # Password for root access
       MYSQL_ROOT_PASSWORD: 'adminroot'
     ports:
       - '3306:3306'
@@ -94,31 +72,6 @@ services:
         limits:
           cpus: '1'
           memory: 1G
-#  postgres_personal:
-#    image: postgres:14.8
-#    environment:
-#      POSTGRES_DB: "pgdb"
-#      POSTGRES_USER: "pguser"
-#      POSTGRES_PASSWORD: "pgpass"
-#      PGDATA: "var/lib/postgresql/data/pgdata"
-#    volumes:
-#      - ../2. Init Database:/docker-entrypoint-initdb.d
-#      - pgdb-data:/var/lib/postgresql/pgdata
-#    ports:
-#      - "5433:5433"
-#    healthcheck:
-#      test: [ "CMD-SHELL", "pg_isready -U pguser -d pgdb" ]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
-#      start_period: 10s
-#    restart: unless-stopped
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: '1'
-#          memory: 2G
-
   redis:
     image: redis:latest
     expose:
@@ -263,7 +216,6 @@ services:
         mkdir -p /sources/logs /sources/dags /sources/plugins
         chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
         exec /entrypoint airflow version
-    # yamllint enable rule:line-length
     environment:
       <<: *airflow-common-env
       _AIRFLOW_DB_UPGRADE: 'true'
@@ -282,7 +234,6 @@ services:
     environment:
       <<: *airflow-common-env
       CONNECTION_CHECK_MAX_COUNT: "0"
-    # Workaround for entrypoint issue. See: https://github.com/apache/airflow/issues/16252
     command:
       - bash
       - -c
