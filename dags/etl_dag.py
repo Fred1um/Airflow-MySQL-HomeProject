@@ -1,13 +1,10 @@
-from airflow import DAG
-from airflow.utils.dates import days_ago
-import logging
-import csv
 import pandas as pd
 
-from airflow.providers.mysql.hooks.mysql import MySqlHook
+from airflow import DAG
+from airflow.utils.dates import days_ago
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
-from airflow.providers.mysql.operators.mysql import MySqlOperator
+from airflow.providers.mysql.hooks.mysql import MySqlHook
 
 
 DEFAULT_ARGS = {
@@ -51,8 +48,8 @@ with DAG(
         mysql_hook = MySqlHook(mysql_conn_id='mysql_local', schema='db')
         connection = mysql_hook.get_conn()
         cursor = connection.cursor()
-        sql = f"INSERT INTO taxi_data VALUES (%s, %s, %s, %s, %s, %s)"
-        cursor.executemany(sql, data_tuple)
+        query = f"INSERT INTO taxi_data VALUES (%s, %s, %s, %s, %s, %s)"
+        cursor.executemany(query, data_tuple)
         connection.commit()
         cursor.close()
         connection.close()
